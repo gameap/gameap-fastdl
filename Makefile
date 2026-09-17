@@ -1,12 +1,15 @@
 VERSION ?= 0.1.0
 
-.PHONY: build test check release
+.PHONY: build test check lint release
 build:
 	go build -buildvcs=false -trimpath -ldflags '-s -w -X main.version=$(VERSION)' -o bin/gameap-fastdl ./cmd/gameap-fastdl
 test:
 	go test -race ./...
 check:
 	go vet ./...
+	golangci-lint run ./...
+lint:
+	golangci-lint run ./...
 release:
 	mkdir -p dist
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -trimpath -ldflags '-s -w -X main.version=$(VERSION)' -o dist/gameap-fastdl-linux-amd64 ./cmd/gameap-fastdl

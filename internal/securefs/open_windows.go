@@ -200,12 +200,12 @@ func openWindowsMode(parent windows.Handle, name string, directory, writable, cr
 		0,
 	)
 	if err != nil {
-		if status, ok := err.(windows.NTStatus); ok {
-			if status == windows.STATUS_REPARSE_POINT_ENCOUNTERED {
+		if ntStatus, ok := errors.AsType[windows.NTStatus](err); ok {
+			if ntStatus == windows.STATUS_REPARSE_POINT_ENCOUNTERED {
 				return 0, fs.ErrPermission
 			}
 
-			return 0, status.Errno()
+			return 0, ntStatus.Errno()
 		}
 
 		return 0, err

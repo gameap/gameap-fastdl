@@ -23,7 +23,11 @@ type windowsService struct {
 	filename string
 }
 
-func (s *windowsService) Execute(_ []string, requests <-chan svc.ChangeRequest, changes chan<- svc.Status) (bool, uint32) {
+func (s *windowsService) Execute(
+	_ []string,
+	requests <-chan svc.ChangeRequest,
+	changes chan<- svc.Status,
+) (bool, uint32) {
 	changes <- svc.Status{State: svc.StartPending}
 
 	ctx, cancel := context.WithCancel(context.Background())

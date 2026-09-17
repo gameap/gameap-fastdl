@@ -11,6 +11,8 @@ import (
 )
 
 func TestRejectJunction(t *testing.T) {
+	t.Parallel()
+
 	dir := canonicalTempDir(t)
 	outside := canonicalTempDir(t)
 	writeTestFile(t, filepath.Join(outside, "private.bsp"), "private content")
@@ -39,6 +41,8 @@ func TestRejectJunction(t *testing.T) {
 }
 
 func TestRejectWindowsDeviceAndNetworkRoots(t *testing.T) {
+	t.Parallel()
+
 	paths := []string{
 		`\\?\C:\games`,
 		`\\.\C:\games`,
@@ -59,6 +63,8 @@ func TestRejectWindowsDeviceAndNetworkRoots(t *testing.T) {
 }
 
 func TestOnlyDirectLocalVolumeDevices(t *testing.T) {
+	t.Parallel()
+
 	for _, device := range []string{`\Device\HarddiskVolume1`, `\Device\HarddiskVolume120`} {
 		if !isLocalVolumeDevice(device) {
 			t.Errorf("rejected local volume %q", device)

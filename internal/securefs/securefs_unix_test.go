@@ -17,7 +17,20 @@ import (
 func TestRejectSpecialFilesWithoutBlocking(t *testing.T) {
 	t.Parallel()
 
-	dir := canonicalTempDir(t)
+	//nolint:usetesting // A unix socket path is limited to about 100 bytes;
+	// t.TempDir() exceeds that on macOS, so this test needs a short base directory.
+	dir, err := os.MkdirTemp("/tmp", "sf-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = os.RemoveAll(dir)
+	})
+
+	dir, err = filepath.EvalSymlinks(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := unix.Mkfifo(filepath.Join(dir, "pipe.bsp"), 0600); err != nil {
 		t.Fatal(err)
 	}
