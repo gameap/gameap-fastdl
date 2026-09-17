@@ -33,16 +33,29 @@ func (s *windowsService) Execute(
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	ready := make(chan struct{})
 	done := make(chan error, 1)
 	go func() {
-		done <- app.Run(ctx, s.filename)
+		done <- app.Run(ctx, s.filename, ready)
 	}()
 
 	status := svc.Status{
 		State:   svc.Running,
 		Accepts: svc.AcceptStop | svc.AcceptShutdown,
 	}
-	changes <- status
+
+	select {
+	case err := <-done:
+		if err != nil {
+			slog.Error("FastDL service failed to start", "error", err)
+
+			return true, 1
+		}
+
+		return false, 0
+	case <-ready:
+		changes <- status
+	}
 
 	for {
 		select {

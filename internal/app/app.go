@@ -12,7 +12,7 @@ import (
 	"github.com/gameap/gameap-fastdl/internal/server"
 )
 
-func Run(ctx context.Context, filename string) error {
+func Run(ctx context.Context, filename string, ready chan<- struct{}) error {
 	cfg, err := config.Load(filename)
 	if err != nil {
 		return err
@@ -30,6 +30,10 @@ func Run(ctx context.Context, filename string) error {
 		return err
 	}
 	defer listener.Close()
+
+	if ready != nil {
+		close(ready)
+	}
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()

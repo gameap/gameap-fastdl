@@ -76,7 +76,7 @@ func run(args []string) error {
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, terminationSignal())
 		defer stop()
 
-		return app.Run(ctx, *filename)
+		return app.Run(ctx, *filename, nil)
 	case "service":
 		return service(*filename)
 	default:
