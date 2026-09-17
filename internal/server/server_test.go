@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -324,10 +325,16 @@ func TestEscapedIndex(t *testing.T) {
 	t.Parallel()
 
 	f := setup(t, "source", true, false)
-	f.write(t, "maps/<img onerror=alert(1)>.bsp", "map")
+
+	name := "<img onerror=alert(1)>.bsp"
+	if runtime.GOOS == "windows" {
+		// < > : " \ / | ? * are illegal in Windows filenames; & and ' still require HTML escaping.
+		name = "&onmouseover='alert(1)'.bsp"
+	}
+	f.write(t, "maps/"+name, "map")
 
 	response := f.request(http.MethodGet, "maps/")
-	if strings.Contains(response.Body.String(), "<img ") {
+	if strings.Contains(response.Body.String(), name) {
 		t.Fatal("index XSS")
 	}
 }
