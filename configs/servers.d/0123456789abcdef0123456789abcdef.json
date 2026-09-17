@@ -1,0 +1,8 @@
+{
+  "token": "0123456789abcdef0123456789abcdef",
+  "root": "/srv/gameap/servers/example/cstrike",
+  "engine": "goldsource",
+  "enabled": false,
+  "autoindex": false,
+  "generate_bz2": false
+}

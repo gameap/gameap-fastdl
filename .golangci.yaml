@@ -1,0 +1,131 @@
+version: "2"
+linters:
+  enable:
+    - asciicheck
+    - bodyclose
+    - copyloopvar
+    - depguard
+    - dogsled
+    - err113
+    - embeddedstructfieldcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exptostd
+    - forbidigo
+    - funlen
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gomodguard_v2
+    - goprintffuncname
+    - gosec
+    - govet
+    - iface
+    - importas
+    - lll
+    - loggercheck
+    - makezero
+    - mirror
+    - misspell
+    - modernize
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnesserr
+    - nlreturn
+    - noctx
+    - nolintlint
+    - nosprintfhostport
+    - paralleltest
+    - perfsprint
+    - prealloc
+    - predeclared
+    - revive
+    - rowserrcheck
+    - sloglint
+    - sqlclosecheck
+    - staticcheck
+    - thelper
+    - unconvert
+    - unparam
+    - unqueryvet
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - whitespace
+  settings:
+    depguard:
+      rules:
+        prevent_unmaintained_packages:
+          list-mode: lax
+          files:
+            - $all
+            - '!$test'
+          allow:
+            - $gostd
+          deny:
+            - pkg: io/ioutil
+              desc: 'replaced by io and os packages since Go 1.16: https://tip.golang.org/doc/go1.16#ioutil'
+    funlen:
+      lines: 100
+      statements: 60
+    goconst:
+      # Engine names, wire-protocol and well-known values: they are written
+      # literally at every use site by nature, and a shared constant would
+      # couple unrelated parsers and policies to each other.
+      ignore-string-values:
+        - "localhost"
+        - "name"
+        - "status"
+        - "key"
+        - "enabled"
+        - "source"
+        - "goldsource"
+        - "config.json"
+        - ".bz2"
+        - "open"
+        - "stat"
+        - "readdir"
+    loggercheck:
+      slog: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: _test\.go|test
+        linters:
+          - depguard
+          - goconst
+          - dupl
+          - funlen
+          - gocognit
+          - gosec
+          - godox
+          - govet
+          - lll
+          - noctx
+          - scopelint
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

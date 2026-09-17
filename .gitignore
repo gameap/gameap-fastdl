@@ -1,0 +1,8 @@
+/bin/
+/dist/
+/coverage.out
+/config.json
+/servers.d/
+/cache/
+*.test
+*.exe
