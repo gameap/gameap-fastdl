@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>FastDL downloads</title>
+    <style>
+        body {
+            font: 16px system-ui;
+            max-width: 60rem;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        ul {
+            padding: 0;
+            list-style: none;
+        }
+
+        li {
+            padding: .5rem 0;
+            overflow-wrap: anywhere;
+        }
+
+        small {
+            margin-left: 1rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header><strong>FastDL downloads</strong></header>
+    <ul>
+        {{range .}}
+        <li>
+            <a href="{{.URL}}">{{.Name}}{{if .Directory}}/{{end}}</a>
+            {{if not .Directory}}
+            <small>{{.Size}} bytes</small>
+            {{end}}
+        </li>
+        {{end}}
+    </ul>
+</body>
+</html>
