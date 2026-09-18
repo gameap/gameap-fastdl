@@ -5,11 +5,15 @@ import (
 	_ "embed"
 	"html/template"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"sort"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gameap/gameap-fastdl/internal/config"
 	"github.com/gameap/gameap-fastdl/internal/policy"
@@ -21,13 +25,44 @@ const maxDirectoryEntries = 10000
 //go:embed index.html
 var listingTemplate string
 
-var listing = template.Must(template.New("index").Parse(listingTemplate))
+var listing = template.Must(template.New("index").Funcs(template.FuncMap{
+	"humanSize": humanSize,
+}).Parse(listingTemplate))
+
+type listingData struct {
+	Path           string
+	ParentURL      string
+	Entries        []entry
+	DirectoryCount int
+	FileCount      int
+}
 
 type entry struct {
 	Name      string
 	URL       string
 	Size      int64
+	Modified  time.Time
 	Directory bool
+}
+
+func humanSize(size int64) string {
+	if size < 1024 {
+		return strconv.FormatInt(size, 10) + " B"
+	}
+
+	units := [...]string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}
+	value := float64(size)
+	unit := 0
+	for value >= 1024 && unit < len(units)-1 {
+		value /= 1024
+		unit++
+	}
+	if math.Round(value*10)/10 >= 1024 && unit < len(units)-1 {
+		value /= 1024
+		unit++
+	}
+
+	return strings.TrimSuffix(strconv.FormatFloat(value, 'f', 1, 64), ".0") + " " + units[unit]
 }
 
 func (h *Handler) index(
@@ -45,7 +80,19 @@ func (h *Handler) index(
 		return
 	}
 
-	items := make([]entry, 0, len(entries))
+	data := listingData{
+		Path:    "/",
+		Entries: make([]entry, 0, len(entries)),
+	}
+	if name != "." {
+		data.Path += name + "/"
+		parent := "/" + settings.Token + "/"
+		if parentName := path.Dir(name); parentName != "." {
+			parent += parentName + "/"
+		}
+		data.ParentURL = (&url.URL{Path: parent}).String()
+	}
+
 	for _, directoryEntry := range entries {
 		child := directoryEntry.Name()
 		if name != "." {
@@ -76,26 +123,30 @@ func (h *Handler) index(
 		target := "/" + settings.Token + "/" + child
 		if info.IsDir() {
 			target += "/"
+			data.DirectoryCount++
+		} else {
+			data.FileCount++
 		}
 
-		items = append(items, entry{
+		data.Entries = append(data.Entries, entry{
 			Name:      directoryEntry.Name(),
 			URL:       (&url.URL{Path: target}).String(),
 			Size:      info.Size(),
+			Modified:  info.ModTime().UTC(),
 			Directory: info.IsDir(),
 		})
 	}
 
-	sort.Slice(items, func(i, j int) bool {
-		if items[i].Directory != items[j].Directory {
-			return items[i].Directory
+	sort.Slice(data.Entries, func(i, j int) bool {
+		if data.Entries[i].Directory != data.Entries[j].Directory {
+			return data.Entries[i].Directory
 		}
 
-		return items[i].Name < items[j].Name
+		return data.Entries[i].Name < data.Entries[j].Name
 	})
 
 	var body bytes.Buffer
-	if err := listing.Execute(&body, items); err != nil {
+	if err := listing.Execute(&body, data); err != nil {
 		http.Error(w, "Directory listing unavailable", http.StatusInternalServerError)
 
 		return

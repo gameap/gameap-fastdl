@@ -70,6 +70,8 @@ Source also permits one `.bz2` suffix on an otherwise permitted resource. `.cfg.
 
 `autoindex` defaults to off. When enabled it lists only policy-approved files and directories, with HTML escaping and the same no-link checks as downloads. There is no index of game servers. Listings are limited to 10,000 entries to bound work. Only GET and HEAD are accepted; ordinary single byte ranges and conditional downloads are supported. Files use `application/octet-stream`, attachment disposition and `nosniff`.
 
+The directory listing uses a table inspired by [NGINX Fancy Index](https://github.com/aperezdc/ngx-fancyindex), with directories first, parent-directory navigation and modification times in UTC. File sizes use binary units (KiB, MiB, GiB, etc.); hovering over a size shows the exact byte count. The table scrolls horizontally on small screens, and the page needs no JavaScript or external assets.
+
 ## Automatic Source compression
 
 With `generate_bz2`, a request for `maps/example.bsp.bz2` creates a compressed copy of the approved `maps/example.bsp` in the private cache. Originals remain unchanged. Each request hashes the currently opened original: changed bytes generate a new cache key even if size and timestamps were preserved. Deleted or forbidden originals never fall back to stale cache entries. If only an existing approved `.bz2` file exists in the game directory it can still be served.

@@ -3,42 +3,173 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>FastDL downloads</title>
+    <title>Index of {{.Path}} — GameAP FastDL</title>
     <style>
+        :root {
+            color-scheme: light;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #272c35;
+            background: #fafbfc;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            font: 16px system-ui;
-            max-width: 60rem;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            max-width: 72rem;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            font-size: .9375rem;
+            line-height: 1.5;
         }
 
-        ul {
-            padding: 0;
-            list-style: none;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: 2.5rem;
+            color: #626976;
         }
 
-        li {
-            padding: .5rem 0;
-            overflow-wrap: anywhere;
+        .brand strong { color: #272c35; font-size: 1.125rem; }
+        .brand span { border-left: 1px solid #d8dce2; padding-left: .75rem; }
+
+        h1 {
+            margin: 0 0 1.5rem;
+            font-size: clamp(1.375rem, 3vw, 1.875rem);
+            font-weight: 500;
+            letter-spacing: -.035em;
         }
 
-        small {
-            margin-left: 1rem;
-            color: #666;
+        .path {
+            display: block;
+            margin-top: .375rem;
+            padding-bottom: .25rem;
+            overflow-x: auto;
+            color: #353b46;
+            font: .85em ui-monospace, SFMono-Regular, Consolas, monospace;
+            letter-spacing: -.025em;
+            white-space: nowrap;
+        }
+
+        .listing {
+            overflow-x: auto;
+            border: 1px solid #dfe3e8;
+            border-radius: .5rem;
+            background: #fff;
+        }
+
+        table {
+            width: 100%;
+            min-width: 38rem;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td { padding: .875rem 1.25rem; white-space: nowrap; }
+
+        th {
+            border-bottom: 1px solid #dfe3e8;
+            background: #f0f2f5;
+            color: #505866;
+            font-size: .8125rem;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        td { border-bottom: 1px solid #edf0f3; }
+        tbody tr:nth-child(even) { background: #f8f9fb; }
+        tbody tr:hover { background: #f3f5f8; }
+        tbody tr:last-child td { border-bottom: 0; }
+        .size { width: 8.5rem; text-align: right; }
+        .date { width: 14rem; }
+        td.size, td.date { color: #626976; font-variant-numeric: tabular-nums; }
+        .timezone { margin-left: .25rem; color: #626976; font-size: .6875rem; }
+
+        a { color: #963447; text-decoration: none; }
+        a:hover { color: #6e1d2d; text-decoration: underline; }
+
+        a:focus-visible, .listing:focus-visible, .path:focus-visible {
+            outline: 2px solid #963447;
+            outline-offset: -2px;
+            border-radius: .125rem;
+        }
+
+        .file-link { display: flex; align-items: center; gap: .75rem; min-width: 0; }
+        .filename { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .icon { width: 1.125rem; height: 1.125rem; flex: none; color: #8b929e; }
+        .directory .icon { color: #ab8240; }
+        .directory .filename { font-weight: 500; }
+        .parent a, .parent .icon { color: #626976; }
+        .empty { padding: 2.5rem 1.25rem; color: #626976; text-align: center; }
+
+        footer {
+            display: flex;
+            gap: .625rem;
+            margin-top: 1rem;
+            color: #626976;
+            font-size: .8125rem;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 1.5rem 1rem; }
+            .brand { margin-bottom: 1.75rem; }
+            th, td { padding: .75rem 1rem; }
+            .empty { text-align: left; }
         }
     </style>
 </head>
 <body>
-    <header><strong>FastDL downloads</strong></header>
-    <ul>
-        {{range .}}
-        <li>
-            <a href="{{.URL}}">{{.Name}}{{if .Directory}}/{{end}}</a>
-            {{if not .Directory}}
-            <small>{{.Size}} bytes</small>
-            {{end}}
-        </li>
-        {{end}}
-    </ul>
+    <header class="brand"><strong>GameAP</strong><span>FastDL</span></header>
+    <main>
+        <h1>Index of <span class="path" tabindex="0">{{.Path}}</span></h1>
+        <div class="listing" role="region" aria-label="Directory contents" tabindex="0">
+            <table aria-label="Files in {{.Path}}">
+                <thead>
+                    <tr>
+                        <th scope="col">File name</th>
+                        <th scope="col" class="size">File size</th>
+                        <th scope="col" class="date">Last modified <span class="timezone">UTC</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{if .ParentURL}}
+                    <tr class="parent">
+                        <td>
+                            <a class="file-link" href="{{.ParentURL}}">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 10-5-5 5-5M4 5h10a6 6 0 0 1 6 6v8" transform="translate(0 2)"/></svg>
+                                <span class="filename">Parent directory</span>
+                            </a>
+                        </td>
+                        <td class="size">—</td>
+                        <td class="date">—</td>
+                    </tr>
+                    {{end}}
+                    {{range .Entries}}
+                    <tr{{if .Directory}} class="directory"{{end}}>
+                        <td>
+                            <a class="file-link" href="{{.URL}}" title="{{.Name}}{{if .Directory}}/{{end}}">
+                                {{if .Directory}}
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Zm0 2h18"/></svg>
+                                {{else}}
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Zm0 0v6h6M8 13h8M8 17h5"/></svg>
+                                {{end}}
+                                <span class="filename">{{.Name}}{{if .Directory}}/{{end}}</span>
+                            </a>
+                        </td>
+                        <td class="size">{{if .Directory}}—{{else}}<span title="{{.Size}} bytes">{{humanSize .Size}}</span>{{end}}</td>
+                        <td class="date"><time datetime="{{.Modified.Format "2006-01-02T15:04:05Z07:00"}}">{{.Modified.Format "2006-01-02 15:04"}}</time></td>
+                    </tr>
+                    {{else}}
+                    <tr><td colspan="3" class="empty">This directory is empty.</td></tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        <footer>
+            <span>{{.DirectoryCount}} {{if eq .DirectoryCount 1}}directory{{else}}directories{{end}}</span>
+            <span aria-hidden="true">&middot;</span>
+            <span>{{.FileCount}} {{if eq .FileCount 1}}file{{else}}files{{end}}</span>
+        </footer>
+    </main>
 </body>
 </html>
