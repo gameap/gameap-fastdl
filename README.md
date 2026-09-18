@@ -43,11 +43,11 @@ For manual configuration, name each server definition `<token>.json`; the plugin
 ```
 
 ```sh
-bin/gameap-fastdl validate --config /srv/gameap/.plugins/fastdla/config.json
-bin/gameap-fastdl serve --config /srv/gameap/.plugins/fastdla/config.json
+bin/gameap-fastdl validate --config /srv/gameap/.plugins/i3z7ix336msd4/config.json
+bin/gameap-fastdl serve --config /srv/gameap/.plugins/i3z7ix336msd4/config.json
 ```
 
-The public address is `http://host:8080/<token>/`. Use that address for `sv_downloadurl` and enable `sv_allowdownload`. The plugin can maintain a marked block in `server.cfg` automatically through the local `configure` command. Existing settings remain outside the block and return to effect when it is removed. This command rejects links in every path component and creates a missing configuration file only when its parent directory already exists. Apply the game configuration with the game's normal restart or configuration reload procedure.
+The public address is `http://host:8080/<token>/`. Use that address for `sv_downloadurl` and enable `sv_allowdownload`. The local `configure` command updates every existing occurrence of these settings in place and adds missing settings in a marked block. It preserves comments, other commands and line endings, including semicolon-separated commands. Changes to existing lines have adjacent `GAMEAP FASTDL BACKUP` comments: keep these comments so cleanup can restore the original settings. Clearing the URL removes the managed block and restores unchanged managed lines; manual edits take precedence over saved originals. Existing blocks from earlier versions are migrated on the next application. This command rejects links in every path component and creates a missing configuration file only when its parent directory already exists. Configuration changes need the game's normal restart, reload or RCON commands to take effect in a running server.
 
 Relative `servers_dir` and `cache_dir` values resolve against the configuration file's directory. Server definitions reload every two seconds; disabled, deleted, malformed, unreadable or invalid definitions stop accepting new downloads. Existing HTTP transfers may finish. Listener/cache path changes require a service restart. JSON is strict: unknown fields and trailing documents are rejected. Definitions are limited to 64 KiB each.
 

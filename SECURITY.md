@@ -13,7 +13,7 @@ Remote HTTP clients may control every byte of the request URL. A hosted game use
 - Content is never executed. HTML autoindex values are escaped; a restrictive content security policy is set. File response types are fixed rather than sniffed.
 - A malformed/deleted server definition revokes new requests on reload, rather than silently retaining the last enabled definition.
 - Compression validates the original path before reading, hashes the source for cache invalidation, detects mutation during generation and publishes complete output only. Private cached data is unreachable without an approved original request.
-- The `configure` CLI scopes writes to the actual game server root and uses the same no-follow traversal for game directories and the final configuration file. It rejects hardlinks, locks competing helper writers, preserves existing permissions and only creates a missing final file exclusively. Automatic configuration does not use the broader daemon file API. It preserves all text outside the exact marked block.
+- The `configure` CLI scopes writes to the actual game server root and uses the same no-follow traversal for game directories and the final configuration file. It rejects hardlinks, locks competing helper writers, preserves existing permissions and only creates a missing final file exclusively. Automatic configuration does not use the broader daemon file API. It updates existing `sv_downloadurl` and `sv_allowdownload` assignments while preserving unrelated settings, commands and comments; missing assignments are added in the marked block. Adjacent restoration metadata allows cleanup to restore edited lines if their contents have not subsequently been changed manually.
 
 ## Required trust boundaries
 
