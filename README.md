@@ -53,24 +53,32 @@ Relative `servers_dir` and `cache_dir` values resolve against the configuration 
 
 ## Public content policy
 
-| Engine     | Location     | Permitted extensions                        |
-|------------|--------------|---------------------------------------------|
-| GoldSource | mod root     | `.wad`                                      |
-| GoldSource | `maps/`      | `.bsp`, `.res`                               |
-| GoldSource | `models/`    | `.mdl`                                      |
-| GoldSource | `sprites/`   | `.spr`                                      |
-| GoldSource | `gfx/`       | `.tga`, `.bmp`, `.png`, `.jpg`, `.jpeg`, `.spr` |
-| GoldSource | `sound/`     | `.wav`, `.mp3`, `.ogg`                        |
-| Source     | `maps/`      | `.bsp`                                      |
-| Source     | `models/`    | `.mdl`, `.vvd`, `.vtx`, `.phy`, `.ani`         |
+| Engine     | Location     | Permitted extensions                                |
+|------------|--------------|-----------------------------------------------------|
+| GoldSource | mod root     | `.wad`                                              |
+| GoldSource | `maps/`      | `.bsp`, `.res`                                       |
+| GoldSource | `models/`    | `.mdl`                                              |
+| GoldSource | `sprites/`   | `.spr`                                              |
+| GoldSource | `gfx/`       | `.tga`, `.bmp`, `.png`, `.jpg`, `.jpeg`, `.spr`         |
+| GoldSource | `sound/`     | `.wav`, `.mp3`, `.ogg`                                |
+| Source     | `maps/`      | `.bsp`                                              |
+| Source     | `models/`    | `.mdl`, `.vvd`, `.vtx`, `.phy`, `.ani`                 |
 | Source     | `materials/` | `.vmt`, `.vtf`, `.tga`, `.bmp`, `.png`, `.jpg`, `.jpeg` |
-| Source     | `sound/`     | `.wav`, `.mp3`, `.ogg`                        |
+| Source     | `sound/`     | `.wav`, `.mp3`, `.ogg`                                |
+| Both       | `motd/`      | `.html`, `.htm`, `.txt`, `.css`                        |
+| Both       | `motd/`      | `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.webp`, `.ico` |
 
-Source also permits one `.bz2` suffix on an otherwise permitted resource. `.cfg.bz2`, double compression suffixes, generic text files, archives (`.pak`, `.vpk`, `.zip`), navigation data, logs, binaries and plugin files are not public. Dotfiles and internal directory names such as `addons`, `cfg`, `plugins`, `logs`, `bin`, `cache` and `backups` are blocked at every depth. Additional arbitrary extensions cannot be enabled through the plugin.
+Source also permits one `.bz2` suffix on an otherwise permitted resource. `.cfg.bz2`, double compression suffixes, text files outside `motd/`, archives (`.pak`, `.vpk`, `.zip`), navigation data, logs, binaries and plugin files are not public. Dotfiles and internal directory names such as `addons`, `cfg`, `plugins`, `logs`, `bin`, `cache` and `backups` are blocked at every depth. Additional arbitrary extensions cannot be enabled through the plugin.
 
-`autoindex` defaults to off. When enabled it lists only policy-approved files and directories, with HTML escaping and the same no-link checks as downloads. There is no index of game servers. Listings are limited to 10,000 entries to bound work. Only GET and HEAD are accepted; ordinary single byte ranges and conditional downloads are supported. Files use `application/octet-stream`, attachment disposition and `nosniff`.
+`autoindex` defaults to off. When enabled it lists only policy-approved files and directories, with HTML escaping and the same no-link checks as downloads. There is no index of game servers. Listings are limited to 10,000 entries to bound work. Only GET and HEAD are accepted; ordinary single byte ranges and conditional downloads are supported. Game assets and compressed files use `application/octet-stream`, attachment disposition and `nosniff`.
 
 The directory listing uses a table inspired by [NGINX Fancy Index](https://github.com/aperezdc/ngx-fancyindex), with directories first, parent-directory navigation and modification times in UTC. File sizes use binary units (KiB, MiB, GiB, etc.); hovering over a size shows the exact byte count. The table scrolls horizontally on small screens, and the page needs no JavaScript or external assets.
+
+## MOTD content
+
+Place an HTML page and its styles and images in `motd/` under the configured mod root, for example `cstrike/motd/index.html`. Use `http://host:8080/<token>/motd/index.html` as the page URL in the game's MOTD file. Relative references such as `style.css` or `images/banner.png` resolve inside the same directory. Direct file URLs work with `autoindex` disabled; directory URLs do not automatically open `index.html`.
+
+Uncompressed MOTD files are served inline with fixed MIME types and `nosniff`; `.txt` is plain text, so HTML pages must use `.html` or `.htm`. The page's content security policy permits styles and images from the same origin, inline styles and data images. It keeps the page sandboxed and blocks JavaScript, frames, forms and objects. JavaScript and SVG files are not published. Source `.bz2` variants remain ordinary binary downloads; use the uncompressed page URL for MOTD.
 
 ## Automatic Source compression
 

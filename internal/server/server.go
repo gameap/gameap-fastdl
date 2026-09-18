@@ -258,9 +258,14 @@ func (h *Handler) serveFile(w http.ResponseWriter, r *http.Request, file *os.Fil
 		return
 	}
 
-	// No MIME sniffing: material files and map manifests may contain active text.
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", "attachment")
+	if contentType := policy.MOTDContentType(name); contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+		w.Header().Set("Content-Disposition", "inline")
+		w.Header().Set("Content-Security-Policy",
+			"default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; sandbox")
+	}
 	w.Header().Set("Last-Modified", info.ModTime().UTC().Format(http.TimeFormat))
 
 	// Multiple ranges can amplify tiny requests into large repeated responses.

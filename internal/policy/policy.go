@@ -27,6 +27,28 @@ var blocked = map[string]bool{
 	"private":   true,
 }
 
+var motdContentTypes = map[string]string{
+	".html": "text/html; charset=utf-8",
+	".htm":  "text/html; charset=utf-8",
+	".txt":  "text/plain; charset=utf-8",
+	".css":  "text/css; charset=utf-8",
+	".png":  "image/png",
+	".jpg":  "image/jpeg",
+	".jpeg": "image/jpeg",
+	".gif":  "image/gif",
+	".bmp":  "image/bmp",
+	".webp": "image/webp",
+	".ico":  "image/x-icon",
+}
+
+func MOTDContentType(name string) string {
+	if !ValidPath(name) || !strings.HasPrefix(strings.ToLower(name), "motd/") {
+		return ""
+	}
+
+	return motdContentTypes[strings.ToLower(path.Ext(name))]
+}
+
 func ValidPath(name string) bool {
 	if name == "" || len(name) > 2048 ||
 		strings.ContainsAny(name, "\\:%?#\x00") || strings.HasPrefix(name, "/") {
@@ -96,7 +118,7 @@ func extensions(engine, top string) string {
 }
 
 func File(engine, name string) bool {
-	if !ValidPath(name) {
+	if (engine != "goldsource" && engine != "source") || !ValidPath(name) {
 		return false
 	}
 
@@ -111,6 +133,10 @@ func File(engine, name string) bool {
 		}
 	}
 
+	if MOTDContentType(name) != "" {
+		return true
+	}
+
 	parts := strings.Split(name, "/")
 	ext := strings.ToLower(path.Ext(name))
 	if len(parts) == 1 {
@@ -123,9 +149,15 @@ func File(engine, name string) bool {
 }
 
 func Directory(engine, name string) bool {
-	if name == "." {
-		return engine == "goldsource" || engine == "source"
+	if engine != "goldsource" && engine != "source" {
+		return false
 	}
 
-	return ValidPath(name) && extensions(engine, strings.ToLower(strings.Split(name, "/")[0])) != ""
+	if name == "." {
+		return true
+	}
+
+	top := strings.ToLower(strings.SplitN(name, "/", 2)[0])
+
+	return ValidPath(name) && (top == "motd" || extensions(engine, top) != "")
 }
