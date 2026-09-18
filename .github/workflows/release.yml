@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  release:
+    types: [ created ]
+
+permissions: {}
+
+jobs:
+  releases-matrix:
+    name: Release Go Binary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+    strategy:
+      matrix:
+        goos: [ "linux", "windows" ]
+        goarch: [ "amd64", "arm64" ]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Set APP_VERSION env
+        run: echo "APP_VERSION=${GITHUB_REF_NAME}" >> "${GITHUB_ENV}"
+
+      - uses: wangyoucao577/go-release-action@481a2c1a0f1be199722e3e9b74d7199acafc30a8
+        id: build
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+          goversion: "1.26"
+          md5sum: false
+          sha256sum: true
+          overwrite: true
+          compress_assets: "OFF"
+          project_path: "./cmd/gameap-fastdl"
+          binary_name: "gameap-fastdl"
+          build_flags: "-buildvcs=false -trimpath"
+          ldflags: >-
+            -s -w
+            -X "main.version=${{ env.APP_VERSION }}"
+
+      - name: Upload assets to S3
+        if: ${{ env.S3_ENDPOINT != '' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.S3_REGION || 'us-east-1' }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_PREFIX: ${{ secrets.S3_PREFIX || 'gameap-fastdl' }}
+          ASSET_DIR: ${{ steps.build.outputs.release_asset_dir }}
+        run: |
+          aws configure set default.s3.addressing_style path
+
+          shopt -s nullglob
+          assets=("${ASSET_DIR}/gameap-fastdl-${APP_VERSION}-"*)
+          if [ ${#assets[@]} -eq 0 ]; then
+            echo "no release assets matched in ${ASSET_DIR}" >&2
+            ls -la "${ASSET_DIR}" >&2
+            exit 1
+          fi
+
+          for file in "${assets[@]}"; do
+            name=$(basename "${file}")
+            aws s3 cp "${file}" "s3://${S3_BUCKET}/${S3_PREFIX}/${APP_VERSION}/${name}" --endpoint-url "${S3_ENDPOINT}"
+            aws s3 cp "${file}" "s3://${S3_BUCKET}/${S3_PREFIX}/latest/${name/-${APP_VERSION}-/-}" --endpoint-url "${S3_ENDPOINT}"
+          done
+
+  releases-json:
+    name: Upload releases JSON to S3
+    runs-on: ubuntu-latest
+    needs: releases-matrix
+    permissions:
+      contents: read
+    env:
+      S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+    steps:
+      - name: Fetch releases from GitHub API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            -o releases.json
+          jq empty releases.json
+
+      - name: Upload releases JSON to S3
+        if: ${{ env.S3_ENDPOINT != '' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.S3_REGION || 'us-east-1' }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_PREFIX: ${{ secrets.S3_PREFIX || 'gameap-fastdl' }}
+        run: |
+          aws configure set default.s3.addressing_style path
+
+          aws s3 cp releases.json "s3://${S3_BUCKET}/${S3_PREFIX}/releases.json" \
+            --endpoint-url "${S3_ENDPOINT}" \
+            --content-type "application/json"
