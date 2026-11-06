@@ -17,5 +17,5 @@ jobs:
       - run: go vet ./...
       - uses: golangci/golangci-lint-action@v7
         with:
-          version: v2.13
+          version: v2.15
       - run: go build ./cmd/gameap-fastdl
