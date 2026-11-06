@@ -12,6 +12,8 @@ func TestAllowlist(t *testing.T) {
 			"models/player/custom/custom.mdl",
 			"sprites/test.spr",
 			"sound/music/intro.mp3",
+			"media/round_end.mp3",
+			"MEDIA/Music/Intro.MP3",
 			"gfx/env/customft.tga",
 			"custom.wad",
 		},
@@ -68,6 +70,20 @@ func TestAllowlist(t *testing.T) {
 
 	if File("goldsource", "maps/custom.bsp.bz2") || File("unknown", "maps/custom.bsp") {
 		t.Fatal("unsupported engine/content allowed")
+	}
+
+	for _, name := range []string{"media/intro.wav", "media/intro.avi", "media/intro.txt", "media/intro.mp3.bz2"} {
+		if File("goldsource", name) {
+			t.Errorf("goldsource allowed %s", name)
+		}
+	}
+	if File("source", "media/intro.mp3") || Directory("source", "media") {
+		t.Error("source allowed media directory")
+	}
+	for _, name := range []string{"media", "media/music"} {
+		if !Directory("goldsource", name) {
+			t.Errorf("goldsource denied directory %s", name)
+		}
 	}
 }
 
