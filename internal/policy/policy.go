@@ -98,6 +98,8 @@ func extensions(engine, top string) string {
 			return ".spr"
 		case "sound":
 			return ".wav .mp3 .ogg"
+		case "media":
+			return ".mp3"
 		case "gfx":
 			return ".tga .bmp .png .jpg .jpeg .spr"
 		}

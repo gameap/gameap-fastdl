@@ -61,6 +61,7 @@ Relative `servers_dir` and `cache_dir` values resolve against the configuration 
 | GoldSource | `sprites/`   | `.spr`                                              |
 | GoldSource | `gfx/`       | `.tga`, `.bmp`, `.png`, `.jpg`, `.jpeg`, `.spr`         |
 | GoldSource | `sound/`     | `.wav`, `.mp3`, `.ogg`                                |
+| GoldSource | `media/`     | `.mp3`                                              |
 | Source     | `maps/`      | `.bsp`                                              |
 | Source     | `models/`    | `.mdl`, `.vvd`, `.vtx`, `.phy`, `.ani`                 |
 | Source     | `materials/` | `.vmt`, `.vtf`, `.tga`, `.bmp`, `.png`, `.jpg`, `.jpeg` |
